@@ -4,22 +4,22 @@ namespace Bpotmalnik\LunarPaynow\Enums;
 
 enum ApiErrorType: string
 {
-    case AuthorizationCodeExpired      = 'AUTHORIZATION_CODE_EXPIRED';
-    case AuthorizationCodeInvalid      = 'AUTHORIZATION_CODE_INVALID';
-    case AuthorizationCodeUsed         = 'AUTHORIZATION_CODE_USED';
-    case InsufficientBalanceFunds      = 'INSUFFICIENT_BALANCE_FUNDS';
-    case InsufficientCardBalanceFunds  = 'INSUFFICIENT_CARD_BALANCE_FUNDS';
-    case NotFound                      = 'NOT_FOUND';
-    case PaymentAmountTooLarge         = 'PAYMENT_AMOUNT_TOO_LARGE';
-    case PaymentAmountTooSmall         = 'PAYMENT_AMOUNT_TOO_SMALL';
-    case PaymentMethodNotAvailable     = 'PAYMENT_METHOD_NOT_AVAILABLE';
-    case RefundAmountTooLarge          = 'REFUND_AMOUNT_TOO_LARGE';
-    case RefundAmountTooSmall          = 'REFUND_AMOUNT_TOO_SMALL';
-    case RefundPossibilityExpired      = 'REFUND_POSSIBILITY_EXPIRED';
-    case SystemTemporarilyUnavailable  = 'SYSTEM_TEMPORARILY_UNAVAILABLE';
-    case Unauthorized                  = 'UNAUTHORIZED';
-    case ValidationError               = 'VALIDATION_ERROR';
-    case VerificationFailed            = 'VERIFICATION_FAILED';
+    case AuthorizationCodeExpired = 'AUTHORIZATION_CODE_EXPIRED';
+    case AuthorizationCodeInvalid = 'AUTHORIZATION_CODE_INVALID';
+    case AuthorizationCodeUsed = 'AUTHORIZATION_CODE_USED';
+    case InsufficientBalanceFunds = 'INSUFFICIENT_BALANCE_FUNDS';
+    case InsufficientCardBalanceFunds = 'INSUFFICIENT_CARD_BALANCE_FUNDS';
+    case NotFound = 'NOT_FOUND';
+    case PaymentAmountTooLarge = 'PAYMENT_AMOUNT_TOO_LARGE';
+    case PaymentAmountTooSmall = 'PAYMENT_AMOUNT_TOO_SMALL';
+    case PaymentMethodNotAvailable = 'PAYMENT_METHOD_NOT_AVAILABLE';
+    case RefundAmountTooLarge = 'REFUND_AMOUNT_TOO_LARGE';
+    case RefundAmountTooSmall = 'REFUND_AMOUNT_TOO_SMALL';
+    case RefundPossibilityExpired = 'REFUND_POSSIBILITY_EXPIRED';
+    case SystemTemporarilyUnavailable = 'SYSTEM_TEMPORARILY_UNAVAILABLE';
+    case Unauthorized = 'UNAUTHORIZED';
+    case ValidationError = 'VALIDATION_ERROR';
+    case VerificationFailed = 'VERIFICATION_FAILED';
 
     public function isCustomerSafe(): bool
     {
@@ -31,7 +31,7 @@ enum ApiErrorType: string
             self::AuthorizationCodeExpired,
             self::AuthorizationCodeInvalid,
             self::AuthorizationCodeUsed => true,
-            default                     => false,
+            default => false,
         };
     }
 

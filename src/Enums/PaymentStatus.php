@@ -20,7 +20,7 @@ enum PaymentStatus: string
             self::Abandoned,
             self::Expired,
             self::Error => true,
-            default     => false,
+            default => false,
         };
     }
 

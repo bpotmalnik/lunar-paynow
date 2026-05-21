@@ -16,9 +16,6 @@ class PaynowApiException extends RuntimeException
         parent::__construct($message, $statusCode);
     }
 
-    // PayNow returns errors in two shapes:
-    //   { "errors": [{ "errorType": "...", "message": "..." }] }
-    //   { "errorType": "...", "message": "..." }
     public static function fromResponse(int $status, array $body): self
     {
         $rawType = $body['errors'][0]['errorType']

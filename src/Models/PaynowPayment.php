@@ -2,13 +2,13 @@
 
 namespace Bpotmalnik\LunarPaynow\Models;
 
+use Bpotmalnik\LunarPaynow\Enums\PaymentStatus;
+use Bpotmalnik\LunarPaynow\Enums\RefundStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lunar\Models\Order;
 use Lunar\Models\Transaction;
-use Bpotmalnik\LunarPaynow\Enums\PaymentStatus;
-use Bpotmalnik\LunarPaynow\Enums\RefundStatus;
 
 class PaynowPayment extends Model
 {

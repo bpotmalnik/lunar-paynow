@@ -1,27 +1,28 @@
 <?php
 
-use Illuminate\Support\Facades\Http;
 use Bpotmalnik\LunarPaynow\Enums\ApiErrorType;
+use Bpotmalnik\LunarPaynow\Enums\RefundReason;
 use Bpotmalnik\LunarPaynow\Exceptions\PaynowApiException;
 use Bpotmalnik\LunarPaynow\PaynowClient;
 use Bpotmalnik\LunarPaynow\Tests\TestCase;
+use Illuminate\Support\Facades\Http;
 
 uses(TestCase::class);
 
 it('sends a signed POST and returns the payment response', function () {
     Http::fake([
         'api.sandbox.paynow.pl/v3/payments' => Http::response([
-            'paymentId'   => 'PBLA-111-222-333',
+            'paymentId' => 'PBLA-111-222-333',
             'redirectUrl' => 'https://api.sandbox.paynow.pl/PBLA-111-222-333?token=abc',
-            'status'      => 'NEW',
+            'status' => 'NEW',
         ], 201),
     ]);
 
     $result = app(PaynowClient::class)->createPayment([
-        'amount'      => 10000,
-        'externalId'  => 'ext-001',
+        'amount' => 10000,
+        'externalId' => 'ext-001',
         'description' => 'Test order',
-        'buyer'       => ['email' => 'buyer@example.com'],
+        'buyer' => ['email' => 'buyer@example.com'],
     ]);
 
     expect($result['paymentId'])->toBe('PBLA-111-222-333')
@@ -72,7 +73,7 @@ it('sends a signed GET and returns the payment status', function () {
     Http::fake([
         'api.sandbox.paynow.pl/v3/payments/PBLA-111-222-333/status' => Http::response([
             'paymentId' => 'PBLA-111-222-333',
-            'status'    => 'CONFIRMED',
+            'status' => 'CONFIRMED',
         ], 200),
     ]);
 
@@ -99,7 +100,7 @@ it('sends a refund with the correct amount', function () {
     Http::fake([
         'api.sandbox.paynow.pl/v3/payments/PBLA-111-222-333/refunds' => Http::response([
             'refundId' => 'REFX-111-222-333',
-            'status'   => 'NEW',
+            'status' => 'NEW',
         ], 201),
     ]);
 
@@ -118,14 +119,14 @@ it('includes the reason in a refund request', function () {
     Http::fake([
         'api.sandbox.paynow.pl/v3/payments/*/refunds' => Http::response([
             'refundId' => 'REFX-999-999-999',
-            'status'   => 'NEW',
+            'status' => 'NEW',
         ], 201),
     ]);
 
     app(PaynowClient::class)->createRefund(
         'PBLA-111-222-333',
         1000,
-        \Bpotmalnik\LunarPaynow\Enums\RefundReason::RefundBefore14
+        RefundReason::RefundBefore14
     );
 
     Http::assertSent(fn ($req) => data_get($req->data(), 'reason') === 'REFUND_BEFORE_14');
@@ -179,7 +180,7 @@ it('sends a refund cancellation with an empty body', function () {
         && $req->hasHeader('Api-Key')
         && $req->hasHeader('Signature')
         && $req->hasHeader('Idempotency-Key')
-        && $req->body() === '' // no body — Signature is HMAC('')
+        && $req->body() === ''
     );
 });
 
@@ -198,7 +199,7 @@ it('returns the current refund status', function () {
     Http::fake([
         'api.sandbox.paynow.pl/v3/refunds/REFX-111-222-333/status' => Http::response([
             'refundId' => 'REFX-111-222-333',
-            'status'   => 'SUCCESSFUL',
+            'status' => 'SUCCESSFUL',
         ], 200),
     ]);
 
@@ -214,8 +215,8 @@ it('returns the current refund status', function () {
 it('includes a failureReason in the refund status when present', function () {
     Http::fake([
         'api.sandbox.paynow.pl/v3/refunds/REFX-FAILED-001/status' => Http::response([
-            'refundId'      => 'REFX-FAILED-001',
-            'status'        => 'FAILED',
+            'refundId' => 'REFX-FAILED-001',
+            'status' => 'FAILED',
             'failureReason' => 'CARD_BALANCE_ERROR',
         ], 200),
     ]);
@@ -262,7 +263,7 @@ it('parses an errorType from the flat envelope', function () {
     Http::fake([
         'api.sandbox.paynow.pl/v3/payments/*/refunds' => Http::response([
             'errorType' => 'REFUND_POSSIBILITY_EXPIRED',
-            'message'   => 'Payment refund possibility expired because transaction is older than 6 months',
+            'message' => 'Payment refund possibility expired because transaction is older than 6 months',
         ], 422),
     ]);
 

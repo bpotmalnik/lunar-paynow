@@ -1,6 +1,10 @@
 <?php
 
+use Bpotmalnik\LunarPaynow\Enums\PaymentStatus;
+use Bpotmalnik\LunarPaynow\Models\PaynowPayment;
+use Bpotmalnik\LunarPaynow\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Lunar\DataTypes\Price;
 use Lunar\DataTypes\ShippingOption;
 use Lunar\Facades\ShippingManifest;
@@ -13,9 +17,6 @@ use Lunar\Models\Order;
 use Lunar\Models\ProductVariant;
 use Lunar\Models\TaxClass;
 use Lunar\Models\Transaction;
-use Bpotmalnik\LunarPaynow\Enums\PaymentStatus;
-use Bpotmalnik\LunarPaynow\Models\PaynowPayment;
-use Bpotmalnik\LunarPaynow\Tests\TestCase;
 
 uses(TestCase::class)->in('Feature');
 uses(RefreshDatabase::class)->in('Feature');
@@ -41,29 +42,29 @@ function buildCart(array $overrides = []): Cart
     );
 
     CartAddress::factory()->create([
-        'cart_id'         => $cart->id,
-        'type'            => 'shipping',
+        'cart_id' => $cart->id,
+        'type' => 'shipping',
         'shipping_option' => 'STANDARD',
     ]);
 
     CartAddress::factory()->create([
         'cart_id' => $cart->id,
-        'type'    => 'billing',
+        'type' => 'billing',
     ]);
 
     $variant = ProductVariant::factory()->create();
 
     $variant->prices()->create([
-        'price'       => 1000,
+        'price' => 1000,
         'currency_id' => $currency->id,
-        'tier'        => 1,
+        'tier' => 1,
     ]);
 
     CartLine::factory()->create([
-        'cart_id'          => $cart->id,
-        'purchasable_id'   => $variant->id,
+        'cart_id' => $cart->id,
+        'purchasable_id' => $variant->id,
         'purchasable_type' => ProductVariant::class,
-        'quantity'         => 1,
+        'quantity' => 1,
     ]);
 
     return $cart->calculate();
@@ -75,33 +76,33 @@ function makePaynowPaymentWithOrder(string $paymentId = 'PBLA-111-222-333', stri
     Currency::factory()->create(['default' => true]);
 
     $order = Order::factory()->create([
-        'status'    => 'draft',
-        'total'     => 10000,
+        'status' => 'draft',
+        'total' => 10000,
         'sub_total' => 9000,
         'tax_total' => 1000,
     ]);
 
     $transaction = Transaction::factory()->create([
-        'order_id'  => $order->id,
-        'type'      => 'intent',
-        'driver'    => 'paynow',
-        'amount'    => 10000,
-        'success'   => false,
+        'order_id' => $order->id,
+        'type' => 'intent',
+        'driver' => 'paynow',
+        'amount' => 10000,
+        'success' => false,
         'reference' => $paymentId,
-        'status'    => $statusValue,
+        'status' => $statusValue,
         'card_type' => 'paynow',
-        'meta'      => ['paynow_payment_id' => $paymentId],
+        'meta' => ['paynow_payment_id' => $paymentId],
     ]);
 
     $paynowPayment = PaynowPayment::create([
-        'order_id'          => $order->id,
-        'transaction_id'    => $transaction->id,
+        'order_id' => $order->id,
+        'transaction_id' => $transaction->id,
         'paynow_payment_id' => $paymentId,
-        'external_id'       => \Illuminate\Support\Str::uuid(),
-        'status'            => PaymentStatus::from($statusValue),
-        'amount'            => 10000,
-        'currency'          => 'PLN',
-        'redirect_url'      => 'https://api.sandbox.paynow.pl/'.$paymentId,
+        'external_id' => Str::uuid(),
+        'status' => PaymentStatus::from($statusValue),
+        'amount' => 10000,
+        'currency' => 'PLN',
+        'redirect_url' => 'https://api.sandbox.paynow.pl/'.$paymentId,
     ]);
 
     return compact('order', 'transaction', 'paynowPayment');
@@ -110,11 +111,11 @@ function makePaynowPaymentWithOrder(string $paymentId = 'PBLA-111-222-333', stri
 function notificationBody(string $paymentId, string $status): string
 {
     return json_encode([
-        'paymentId'  => $paymentId,
+        'paymentId' => $paymentId,
         'externalId' => 'ext-001',
-        'status'     => $status,
-        'currency'   => 'PLN',
-        'amount'     => 10000,
+        'status' => $status,
+        'currency' => 'PLN',
+        'amount' => 10000,
     ]);
 }
 

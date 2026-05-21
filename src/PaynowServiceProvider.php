@@ -2,10 +2,10 @@
 
 namespace Bpotmalnik\LunarPaynow;
 
+use Bpotmalnik\LunarPaynow\Http\Controllers\PaynowNotificationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Lunar\Facades\Payments;
-use Bpotmalnik\LunarPaynow\Http\Controllers\PaynowNotificationController;
 
 class PaynowServiceProvider extends ServiceProvider
 {
@@ -53,8 +53,6 @@ class PaynowServiceProvider extends ServiceProvider
 
     private function registerRoutes(): void
     {
-        // Registered outside the `web` group — CSRF protection is replaced by
-        // PayNow's HMAC-SHA256 Signature header verified in the controller.
         Route::post(
             config('lunar.paynow.notification_path', 'paynow/notification'),
             PaynowNotificationController::class

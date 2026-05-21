@@ -2,10 +2,10 @@
 
 namespace Bpotmalnik\LunarPaynow\Events;
 
+use Bpotmalnik\LunarPaynow\Models\PaynowPayment;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Lunar\Models\Order;
-use Bpotmalnik\LunarPaynow\Models\PaynowPayment;
 
 class PaymentFailed
 {

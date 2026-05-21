@@ -2,70 +2,47 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Komunikaty dla administratora
-    |--------------------------------------------------------------------------
-    | Wyświetlane w panelu administracyjnym Lunar / widoku zamówienia.
-    | NIE należy wyświetlać ich bezpośrednio klientom końcowym.
-    */
     'admin' => [
-        // Konfiguracja / autoryzacja
-        'verification_failed'             => 'Weryfikacja podpisu PayNow nie powiodła się. Sprawdź konfigurację klucza PAYNOW_SIGNATURE_KEY.',
-        'unauthorized'                    => 'Autoryzacja API PayNow nie powiodła się. Sprawdź konfigurację klucza PAYNOW_API_KEY.',
+        'verification_failed' => 'Weryfikacja podpisu PayNow nie powiodła się. Sprawdź konfigurację klucza PAYNOW_SIGNATURE_KEY.',
+        'unauthorized' => 'Autoryzacja API PayNow nie powiodła się. Sprawdź konfigurację klucza PAYNOW_API_KEY.',
 
-        // Tymczasowe
-        'system_temporarily_unavailable'  => 'PayNow jest chwilowo niedostępny. Spróbuj ponownie później.',
+        'system_temporarily_unavailable' => 'PayNow jest chwilowo niedostępny. Spróbuj ponownie później.',
 
-        // Kwota płatności
-        'payment_amount_too_small'        => 'Kwota płatności jest poniżej minimum (1,00 PLN).',
-        'payment_amount_too_large'        => 'Kwota płatności przekracza dozwolone maksimum.',
+        'payment_amount_too_small' => 'Kwota płatności jest poniżej minimum (1,00 PLN).',
+        'payment_amount_too_large' => 'Kwota płatności przekracza dozwolone maksimum.',
 
-        // Metoda płatności
-        'payment_method_not_available'    => 'Wybrana metoda płatności jest niedostępna.',
+        'payment_method_not_available' => 'Wybrana metoda płatności jest niedostępna.',
 
-        // BLIK
-        'authorization_code_expired'      => 'Kod BLIK wygasł.',
-        'authorization_code_invalid'      => 'Nieprawidłowy kod BLIK.',
-        'authorization_code_used'         => 'Ten kod BLIK został już wykorzystany.',
+        'authorization_code_expired' => 'Kod BLIK wygasł.',
+        'authorization_code_invalid' => 'Nieprawidłowy kod BLIK.',
+        'authorization_code_used' => 'Ten kod BLIK został już wykorzystany.',
 
-        // Zwroty (inicjowane przez administratora, nigdy nie dla klientów)
-        'refund_possibility_expired'      => 'Zwrot niemożliwy — transakcja starsza niż 6 miesięcy.',
-        'insufficient_balance_funds'      => 'Niewystarczające saldo sprzedawcy do realizacji zwrotu. Włącz funkcję oczekujących zwrotów w panelu PayNow.',
+        'refund_possibility_expired' => 'Zwrot niemożliwy — transakcja starsza niż 6 miesięcy.',
+        'insufficient_balance_funds' => 'Niewystarczające saldo sprzedawcy do realizacji zwrotu. Włącz funkcję oczekujących zwrotów w panelu PayNow.',
         'insufficient_card_balance_funds' => 'Niewystarczające saldo karty do realizacji zwrotu. Włącz funkcję oczekujących zwrotów w panelu PayNow.',
-        'refund_amount_too_small'         => 'Kwota zwrotu jest poniżej dozwolonego minimum.',
-        'refund_amount_too_large'         => 'Kwota zwrotu przekracza dostępne saldo do zwrotu.',
+        'refund_amount_too_small' => 'Kwota zwrotu jest poniżej dozwolonego minimum.',
+        'refund_amount_too_large' => 'Kwota zwrotu przekracza dostępne saldo do zwrotu.',
 
-        // Walidacja na poziomie drivera (przed wywołaniem API)
-        'refund_record_not_found'         => 'Nie znaleziono rekordu płatności PayNow dla tej transakcji.',
-        'refund_not_confirmed'            => 'Zwroty można wystawiać tylko dla potwierdzonych płatności (aktualny status: :status).',
-        'refund_exceeds_balance'          => 'Kwota zwrotu (:amount) przekracza dostępne saldo (:available).',
-        'refund_not_cancellable'          => 'Zwrot :refund_id nie może zostać anulowany (status: :status). Anulować można tylko zwroty w statusie NEW.',
-        'missing_buyer_email'             => 'Nie można utworzyć płatności PayNow: brak adresu e-mail w adresie rozliczeniowym lub koncie klienta.',
+        'refund_record_not_found' => 'Nie znaleziono rekordu płatności PayNow dla tej transakcji.',
+        'refund_not_confirmed' => 'Zwroty można wystawiać tylko dla potwierdzonych płatności (aktualny status: :status).',
+        'refund_exceeds_balance' => 'Kwota zwrotu (:amount) przekracza dostępne saldo (:available).',
+        'refund_not_cancellable' => 'Zwrot :refund_id nie może zostać anulowany (status: :status). Anulować można tylko zwroty w statusie NEW.',
+        'missing_buyer_email' => 'Nie można utworzyć płatności PayNow: brak adresu e-mail w adresie rozliczeniowym lub koncie klienta.',
 
-        // Inne
-        'not_found'                       => 'Zasób PayNow nie został znaleziony.',
-        'validation_error'                => 'Błąd walidacji żądania PayNow: :message',
-        'generic'                         => 'Błąd API PayNow: :message',
+        'not_found' => 'Zasób PayNow nie został znaleziony.',
+        'validation_error' => 'Błąd walidacji żądania PayNow: :message',
+        'generic' => 'Błąd API PayNow: :message',
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Komunikaty dla klienta
-    |--------------------------------------------------------------------------
-    | Bezpieczne do wyświetlenia bezpośrednio w przeglądarce.
-    | Obejmują tylko błędy, na które klient może zareagować — pozostałe
-    | zwracają komunikat "generic", aby nie ujawniać danych wewnętrznych.
-    */
     'customer' => [
-        'system_temporarily_unavailable'  => 'Usługa płatności jest chwilowo niedostępna. Spróbuj ponownie za kilka minut.',
-        'payment_amount_too_small'        => 'Kwota płatności jest zbyt mała.',
-        'payment_amount_too_large'        => 'Kwota płatności jest zbyt duża.',
-        'payment_method_not_available'    => 'Wybrana metoda płatności jest niedostępna. Wybierz inną metodę.',
-        'authorization_code_expired'      => 'Kod BLIK wygasł. Wygeneruj nowy kod i spróbuj ponownie.',
-        'authorization_code_invalid'      => 'Nieprawidłowy kod BLIK. Sprawdź kod i spróbuj ponownie.',
-        'authorization_code_used'         => 'Ten kod BLIK został już użyty. Wygeneruj nowy kod.',
-        'generic'                         => 'Płatność nie powiodła się. Spróbuj ponownie lub wybierz inną metodę płatności.',
+        'system_temporarily_unavailable' => 'Usługa płatności jest chwilowo niedostępna. Spróbuj ponownie za kilka minut.',
+        'payment_amount_too_small' => 'Kwota płatności jest zbyt mała.',
+        'payment_amount_too_large' => 'Kwota płatności jest zbyt duża.',
+        'payment_method_not_available' => 'Wybrana metoda płatności jest niedostępna. Wybierz inną metodę.',
+        'authorization_code_expired' => 'Kod BLIK wygasł. Wygeneruj nowy kod i spróbuj ponownie.',
+        'authorization_code_invalid' => 'Nieprawidłowy kod BLIK. Sprawdź kod i spróbuj ponownie.',
+        'authorization_code_used' => 'Ten kod BLIK został już użyty. Wygeneruj nowy kod.',
+        'generic' => 'Płatność nie powiodła się. Spróbuj ponownie lub wybierz inną metodę płatności.',
     ],
 
 ];

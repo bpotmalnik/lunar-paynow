@@ -2,12 +2,6 @@
 
 namespace Bpotmalnik\LunarPaynow;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
-use Lunar\Base\DataTransferObjects\PaymentCapture;
-use Lunar\Base\DataTransferObjects\PaymentRefund;
-use Lunar\Events\PaymentAttemptEvent;
-use Lunar\Models\Contracts\Transaction as TransactionContract;
 use Bpotmalnik\LunarPaynow\Enums\ApiErrorType;
 use Bpotmalnik\LunarPaynow\Enums\PaymentStatus;
 use Bpotmalnik\LunarPaynow\Enums\RefundReason;
@@ -16,6 +10,12 @@ use Bpotmalnik\LunarPaynow\Exceptions\PaynowApiException;
 use Bpotmalnik\LunarPaynow\Models\PaynowPayment;
 use Bpotmalnik\LunarPaynow\Models\PaynowRefund;
 use Bpotmalnik\LunarPaynow\Responses\PaymentAuthorize;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Lunar\Base\DataTransferObjects\PaymentCapture;
+use Lunar\Base\DataTransferObjects\PaymentRefund;
+use Lunar\Events\PaymentAttemptEvent;
+use Lunar\Models\Contracts\Transaction as TransactionContract;
 use Lunar\PaymentTypes\AbstractPayment;
 
 class PaynowPaymentDriver extends AbstractPayment
@@ -63,8 +63,6 @@ class PaynowPaymentDriver extends AbstractPayment
             return $response;
         }
 
-        // Reuse an existing pending payment rather than creating a new charge
-        // when the customer hits the back button before completing payment.
         $existing = PaynowPayment::where('order_id', $order->id)
             ->whereNotIn('status', [
                 PaymentStatus::Confirmed->value,
@@ -91,7 +89,6 @@ class PaynowPaymentDriver extends AbstractPayment
         return $this->callPaynow((string) Str::uuid(), null);
     }
 
-    // PayNow confirms and captures in one step via the CONFIRMED notification.
     public function capture(TransactionContract $transaction, $amount = 0): PaymentCapture
     {
         return new PaymentCapture(success: true);
@@ -99,7 +96,6 @@ class PaynowPaymentDriver extends AbstractPayment
 
     public function refund(TransactionContract $transaction, int $amount = 0, $notes = null): PaymentRefund
     {
-        // Both intent and capture transactions store the PayNow payment ID in `reference`.
         $paynowPayment = PaynowPayment::where('paynow_payment_id', $transaction->reference)->first();
 
         if (! $paynowPayment) {
@@ -125,7 +121,7 @@ class PaynowPaymentDriver extends AbstractPayment
             return new PaymentRefund(
                 success: false,
                 message: trans('lunar-paynow::errors.admin.refund_exceeds_balance', [
-                    'amount'    => $refundAmount,
+                    'amount' => $refundAmount,
                     'available' => $available,
                 ]),
             );
@@ -144,23 +140,23 @@ class PaynowPaymentDriver extends AbstractPayment
 
             $lunarTx = $transaction->order->transactions()->create([
                 'parent_transaction_id' => $transaction->id,
-                'type'                  => 'refund',
-                'success'               => true,
-                'driver'                => 'paynow',
-                'amount'                => $refundAmount,
-                'reference'             => $apiResponse['refundId'],
-                'status'                => $apiResponse['status'],
-                'card_type'             => 'paynow',
-                'notes'                 => $notes,
-                'meta'                  => ['refund_id' => $apiResponse['refundId']],
+                'type' => 'refund',
+                'success' => true,
+                'driver' => 'paynow',
+                'amount' => $refundAmount,
+                'reference' => $apiResponse['refundId'],
+                'status' => $apiResponse['status'],
+                'card_type' => 'paynow',
+                'notes' => $notes,
+                'meta' => ['refund_id' => $apiResponse['refundId']],
             ]);
 
             PaynowRefund::create([
-                'paynow_payment_id'    => $paynowPayment->id,
+                'paynow_payment_id' => $paynowPayment->id,
                 'lunar_transaction_id' => $lunarTx->id,
-                'refund_id'            => $apiResponse['refundId'],
-                'status'               => $apiResponse['status'],
-                'amount'               => $refundAmount,
+                'refund_id' => $apiResponse['refundId'],
+                'status' => $apiResponse['status'],
+                'amount' => $refundAmount,
             ]);
         } catch (PaynowApiException $e) {
             return new PaymentRefund(success: false, message: $this->adminMessage($e));
@@ -176,7 +172,7 @@ class PaynowPaymentDriver extends AbstractPayment
                 success: false,
                 message: trans('lunar-paynow::errors.admin.refund_not_cancellable', [
                     'refund_id' => $refund->refund_id,
-                    'status'    => $refund->status->value,
+                    'status' => $refund->status->value,
                 ]),
             );
         }
@@ -233,17 +229,17 @@ class PaynowPaymentDriver extends AbstractPayment
 
         try {
             $payload = array_filter([
-                'amount'       => $order->total->value,
-                'currency'     => $order->currency_code,
-                'externalId'   => $externalId,
-                'description'  => $this->data['description'] ?? config('lunar.paynow.description', 'Order payment'),
-                'continueUrl'  => $this->data['continue_url'] ?? null,
+                'amount' => $order->total->value,
+                'currency' => $order->currency_code,
+                'externalId' => $externalId,
+                'description' => $this->data['description'] ?? config('lunar.paynow.description', 'Order payment'),
+                'continueUrl' => $this->data['continue_url'] ?? null,
                 'validityTime' => config('lunar.paynow.validity_time', 3600),
-                'buyer'        => array_filter([
-                    'email'     => $email,
+                'buyer' => array_filter([
+                    'email' => $email,
                     'firstName' => $order->billingAddress?->first_name,
-                    'lastName'  => $order->billingAddress?->last_name,
-                    'phone'     => $order->billingAddress?->contact_phone,
+                    'lastName' => $order->billingAddress?->last_name,
+                    'phone' => $order->billingAddress?->contact_phone,
                 ]),
                 'orderItems' => $this->buildOrderItems(),
             ]);
@@ -251,25 +247,25 @@ class PaynowPaymentDriver extends AbstractPayment
             $apiResponse = $this->client->createPayment($payload);
 
             $transaction = $order->transactions()->create([
-                'type'      => 'intent',
-                'success'   => false,
-                'driver'    => 'paynow',
-                'amount'    => $order->total->value,
+                'type' => 'intent',
+                'success' => false,
+                'driver' => 'paynow',
+                'amount' => $order->total->value,
                 'reference' => $apiResponse['paymentId'],
-                'status'    => $apiResponse['status'],
+                'status' => $apiResponse['status'],
                 'card_type' => 'paynow',
-                'meta'      => ['paynow_payment_id' => $apiResponse['paymentId']],
+                'meta' => ['paynow_payment_id' => $apiResponse['paymentId']],
             ]);
 
             PaynowPayment::create([
-                'order_id'          => $order->id,
-                'transaction_id'    => $transaction->id,
+                'order_id' => $order->id,
+                'transaction_id' => $transaction->id,
                 'paynow_payment_id' => $apiResponse['paymentId'],
-                'external_id'       => $externalId,
-                'status'            => $apiResponse['status'],
-                'amount'            => $order->total->value,
-                'currency'          => $order->currency_code,
-                'redirect_url'      => $apiResponse['redirectUrl'],
+                'external_id' => $externalId,
+                'status' => $apiResponse['status'],
+                'amount' => $order->total->value,
+                'currency' => $order->currency_code,
+                'redirect_url' => $apiResponse['redirectUrl'],
                 'parent_payment_id' => $parentPaymentId,
             ]);
         } catch (PaynowApiException $e) {
@@ -279,7 +275,6 @@ class PaynowPaymentDriver extends AbstractPayment
                 ]);
             }
 
-            // authorize() runs in checkout context — message must be safe for the customer.
             $response = new PaymentAuthorize(
                 success: false,
                 message: $e->errorType?->customerMessage()
@@ -316,9 +311,9 @@ class PaynowPaymentDriver extends AbstractPayment
         }
 
         return $this->cart->lines->map(fn ($line) => [
-            'name'     => $line->purchasable->translateAttribute('name'),
+            'name' => $line->purchasable->translateAttribute('name'),
             'quantity' => $line->quantity,
-            'price'    => $line->unitPrice->value,
+            'price' => $line->unitPrice->value,
         ])->values()->all();
     }
 }

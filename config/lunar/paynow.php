@@ -55,10 +55,10 @@ return [
     */
     'status_mapping' => [
         'CONFIRMED' => env('PAYNOW_STATUS_CONFIRMED', 'payment-received'),
-        'REJECTED'  => env('PAYNOW_STATUS_REJECTED', 'payment-failed'),
+        'REJECTED' => env('PAYNOW_STATUS_REJECTED', 'payment-failed'),
         'ABANDONED' => env('PAYNOW_STATUS_ABANDONED', 'payment-failed'),
-        'EXPIRED'   => env('PAYNOW_STATUS_EXPIRED', 'payment-failed'),
-        'ERROR'     => env('PAYNOW_STATUS_ERROR', 'payment-failed'),
+        'EXPIRED' => env('PAYNOW_STATUS_EXPIRED', 'payment-failed'),
+        'ERROR' => env('PAYNOW_STATUS_ERROR', 'payment-failed'),
     ],
 
 ];

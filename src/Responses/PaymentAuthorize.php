@@ -16,8 +16,6 @@ class PaymentAuthorize extends BasePaymentAuthorize
         public ?ApiErrorType $errorType = null,
     ) {}
 
-    // $message follows Lunar's convention — customer-safe for the checkout layer.
-    // Use this for the detailed admin reason shown in the order panel or logs.
     public function adminMessage(): string
     {
         return $this->errorType?->adminMessage($this->message ?? '')

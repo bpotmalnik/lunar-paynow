@@ -2,10 +2,10 @@
 
 namespace Bpotmalnik\LunarPaynow\Tests;
 
+use Bpotmalnik\LunarPaynow\PaynowServiceProvider;
 use Illuminate\Support\Facades\Http;
 use Kalnoy\Nestedset\NestedSetServiceProvider;
 use Lunar\LunarServiceProvider;
-use Bpotmalnik\LunarPaynow\PaynowServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 use Spatie\Activitylog\ActivitylogServiceProvider;
 use Spatie\LaravelBlink\BlinkServiceProvider;
@@ -39,10 +39,10 @@ class TestCase extends OrchestraTestCase
         $app['config']->set('lunar.paynow.sandbox', true);
         $app['config']->set('lunar.paynow.status_mapping', [
             'CONFIRMED' => 'payment-received',
-            'REJECTED'  => 'payment-failed',
+            'REJECTED' => 'payment-failed',
             'ABANDONED' => 'payment-failed',
-            'EXPIRED'   => 'payment-failed',
-            'ERROR'     => 'payment-failed',
+            'EXPIRED' => 'payment-failed',
+            'ERROR' => 'payment-failed',
         ]);
     }
 

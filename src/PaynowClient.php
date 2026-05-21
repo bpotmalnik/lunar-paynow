@@ -2,10 +2,10 @@
 
 namespace Bpotmalnik\LunarPaynow;
 
-use Illuminate\Http\Client\RequestException;
-use Illuminate\Support\Facades\Http;
 use Bpotmalnik\LunarPaynow\Enums\RefundReason;
 use Bpotmalnik\LunarPaynow\Exceptions\PaynowApiException;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Http;
 
 class PaynowClient
 {
@@ -90,10 +90,10 @@ class PaynowClient
     private function headers(string $body, string $idempotencyKey): array
     {
         return [
-            'Api-Key'         => $this->apiKey,
-            'Signature'       => $this->sign($body),
+            'Api-Key' => $this->apiKey,
+            'Signature' => $this->sign($body),
             'Idempotency-Key' => $idempotencyKey,
-            'Accept'          => 'application/json',
+            'Accept' => 'application/json',
         ];
     }
 

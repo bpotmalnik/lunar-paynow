@@ -2,17 +2,17 @@
 
 namespace Bpotmalnik\LunarPaynow\Http\Controllers;
 
+use Bpotmalnik\LunarPaynow\Enums\PaymentStatus;
+use Bpotmalnik\LunarPaynow\Events\PaymentConfirmed;
+use Bpotmalnik\LunarPaynow\Events\PaymentFailed;
+use Bpotmalnik\LunarPaynow\Models\PaynowPayment;
+use Bpotmalnik\LunarPaynow\PaynowClient;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Lunar\Models\Order;
-use Bpotmalnik\LunarPaynow\Enums\PaymentStatus;
-use Bpotmalnik\LunarPaynow\Events\PaymentConfirmed;
-use Bpotmalnik\LunarPaynow\Events\PaymentFailed;
-use Bpotmalnik\LunarPaynow\Models\PaynowPayment;
-use Bpotmalnik\LunarPaynow\PaynowClient;
 
 class PaynowNotificationController extends Controller
 {
@@ -81,17 +81,16 @@ class PaynowNotificationController extends Controller
 
         $order->transactions()->create([
             'parent_transaction_id' => $intent->id,
-            'type'                  => 'capture',
-            'success'               => true,
-            'driver'                => 'paynow',
-            'amount'                => $intent->amount->value,
-            'reference'             => $paynowPayment->paynow_payment_id,
-            'status'                => PaymentStatus::Confirmed->value,
-            'card_type'             => 'paynow',
-            'meta'                  => ['paynow_payment_id' => $paynowPayment->paynow_payment_id],
+            'type' => 'capture',
+            'success' => true,
+            'driver' => 'paynow',
+            'amount' => $intent->amount->value,
+            'reference' => $paynowPayment->paynow_payment_id,
+            'status' => PaymentStatus::Confirmed->value,
+            'card_type' => 'paynow',
+            'meta' => ['paynow_payment_id' => $paynowPayment->paynow_payment_id],
         ]);
 
-        // placed_at is Lunar's canonical "order is complete" signal.
         $order->update(['placed_at' => $order->placed_at ?? now()]);
     }
 
@@ -99,7 +98,7 @@ class PaynowNotificationController extends Controller
     {
         $paynowPayment->transaction?->update([
             'success' => false,
-            'status'  => $paynowPayment->status->value,
+            'status' => $paynowPayment->status->value,
         ]);
     }
 }
