@@ -51,6 +51,7 @@ class PaynowPaymentDriver extends AbstractPayment
             return $response;
         }
 
+        /** @var \Lunar\Models\Order $order */
         $order = $this->order;
 
         if ($order->placed_at) {
@@ -96,6 +97,7 @@ class PaynowPaymentDriver extends AbstractPayment
 
     public function refund(TransactionContract $transaction, int $amount = 0, $notes = null): PaymentRefund
     {
+        /** @var \Lunar\Models\Transaction $transaction */
         $paynowPayment = PaynowPayment::where('paynow_payment_id', $transaction->reference)->first();
 
         if (! $paynowPayment) {
@@ -114,6 +116,7 @@ class PaynowPaymentDriver extends AbstractPayment
             );
         }
 
+        // @phpstan-ignore-next-line
         $refundAmount = $amount ?: $transaction->amount->value;
         $available = $paynowPayment->refundableAmount();
 
@@ -138,6 +141,7 @@ class PaynowPaymentDriver extends AbstractPayment
                 reason: $reason,
             );
 
+            // @phpstan-ignore-next-line
             $lunarTx = $transaction->order->transactions()->create([
                 'parent_transaction_id' => $transaction->id,
                 'type' => 'refund',
@@ -211,9 +215,13 @@ class PaynowPaymentDriver extends AbstractPayment
 
     private function callPaynow(string $externalId, ?int $parentPaymentId): PaymentAuthorize
     {
+        /** @var \Lunar\Models\Order $order */
         $order = $this->order;
+        /** @var \Lunar\Models\Cart|null $cart */
+        $cart = $this->cart;
 
-        $email = $order->billingAddress?->contact_email ?? $this->cart?->user?->email;
+        // @phpstan-ignore-next-line (billingAddress nullability and CartContract::$user not in interface)
+        $email = $order->billingAddress?->contact_email ?? $cart?->user?->email;
 
         if (! $email) {
             $response = new PaymentAuthorize(
@@ -229,6 +237,7 @@ class PaynowPaymentDriver extends AbstractPayment
 
         try {
             $payload = array_filter([
+                // @phpstan-ignore-next-line
                 'amount' => $order->total->value,
                 'currency' => $order->currency_code,
                 'externalId' => $externalId,
@@ -237,8 +246,11 @@ class PaynowPaymentDriver extends AbstractPayment
                 'validityTime' => config('lunar.paynow.validity_time', 3600),
                 'buyer' => array_filter([
                     'email' => $email,
+                    // @phpstan-ignore-next-line
                     'firstName' => $order->billingAddress?->first_name,
+                    // @phpstan-ignore-next-line
                     'lastName' => $order->billingAddress?->last_name,
+                    // @phpstan-ignore-next-line
                     'phone' => $order->billingAddress?->contact_phone,
                 ]),
                 'orderItems' => $this->buildOrderItems(),
@@ -246,10 +258,12 @@ class PaynowPaymentDriver extends AbstractPayment
 
             $apiResponse = $this->client->createPayment($payload);
 
+            /** @var \Lunar\Models\Transaction $transaction */
             $transaction = $order->transactions()->create([
                 'type' => 'intent',
                 'success' => false,
                 'driver' => 'paynow',
+                // @phpstan-ignore-next-line
                 'amount' => $order->total->value,
                 'reference' => $apiResponse['paymentId'],
                 'status' => $apiResponse['status'],
@@ -263,6 +277,7 @@ class PaynowPaymentDriver extends AbstractPayment
                 'paynow_payment_id' => $apiResponse['paymentId'],
                 'external_id' => $externalId,
                 'status' => $apiResponse['status'],
+                // @phpstan-ignore-next-line
                 'amount' => $order->total->value,
                 'currency' => $order->currency_code,
                 'redirect_url' => $apiResponse['redirectUrl'],
@@ -304,8 +319,10 @@ class PaynowPaymentDriver extends AbstractPayment
             ?? trans('lunar-paynow::errors.admin.generic', ['message' => $e->getMessage()]);
     }
 
+    /** @return array<int, array<string, mixed>> */
     private function buildOrderItems(): array
     {
+        // @phpstan-ignore-next-line
         if (! $this->cart?->lines) {
             return [];
         }

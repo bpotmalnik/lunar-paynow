@@ -7,6 +7,9 @@ use RuntimeException;
 
 class PaynowApiException extends RuntimeException
 {
+    /**
+     * @param array<string, mixed> $errors
+     */
     public function __construct(
         string $message,
         public readonly int $statusCode = 0,
@@ -16,6 +19,7 @@ class PaynowApiException extends RuntimeException
         parent::__construct($message, $statusCode);
     }
 
+    /** @param array<string, mixed> $body */
     public static function fromResponse(int $status, array $body): self
     {
         $rawType = $body['errors'][0]['errorType']

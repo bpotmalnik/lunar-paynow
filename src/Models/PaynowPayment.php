@@ -10,6 +10,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lunar\Models\Order;
 use Lunar\Models\Transaction;
 
+/**
+ * @property PaymentStatus $status
+ * @property int $amount
+ * @property string $paynow_payment_id
+ * @property string|null $redirect_url
+ * @property string|null $external_id
+ * @property int|null $parent_payment_id
+ * @property int $order_id
+ * @property int|null $transaction_id
+ * @property string $currency
+ */
 class PaynowPayment extends Model
 {
     protected $table = 'paynow_payments';
@@ -40,26 +51,31 @@ class PaynowPayment extends Model
         ]);
     }
 
+    /** @return BelongsTo<Order, $this> */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /** @return BelongsTo<Transaction, $this> */
     public function transaction(): BelongsTo
     {
         return $this->belongsTo(Transaction::class);
     }
 
+    /** @return BelongsTo<PaynowPayment, $this> */
     public function originalPayment(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_payment_id');
     }
 
+    /** @return HasMany<PaynowPayment, $this> */
     public function recoveryAttempts(): HasMany
     {
         return $this->hasMany(self::class, 'parent_payment_id');
     }
 
+    /** @return HasMany<PaynowRefund, $this> */
     public function refunds(): HasMany
     {
         return $this->hasMany(PaynowRefund::class);

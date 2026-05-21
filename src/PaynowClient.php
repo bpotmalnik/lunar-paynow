@@ -19,6 +19,10 @@ class PaynowClient
         private readonly bool $sandbox = false,
     ) {}
 
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
     public function createPayment(array $payload): array
     {
         $body = json_encode($payload, JSON_THROW_ON_ERROR);
@@ -26,11 +30,13 @@ class PaynowClient
         return $this->post('/v3/payments', $body, $this->idempotencyKey($payload['externalId']));
     }
 
+    /** @return array<string, mixed> */
     public function getPaymentStatus(string $paymentId): array
     {
         return $this->get("/v3/payments/{$paymentId}/status", $this->idempotencyKey("status-{$paymentId}"));
     }
 
+    /** @return array<string, mixed> */
     public function createRefund(string $paymentId, int $amount, ?RefundReason $reason = null): array
     {
         $payload = array_filter(['amount' => $amount, 'reason' => $reason?->value]);
@@ -44,6 +50,7 @@ class PaynowClient
         $this->post("/v3/refunds/{$refundId}/cancel", '', $this->idempotencyKey("cancel-{$refundId}"));
     }
 
+    /** @return array<string, mixed> */
     public function getRefundStatus(string $refundId): array
     {
         return $this->get("/v3/refunds/{$refundId}/status", $this->idempotencyKey("refund-status-{$refundId}"));
@@ -56,6 +63,7 @@ class PaynowClient
         return hash_equals($expected, $signature);
     }
 
+    /** @return array<string, mixed> */
     private function post(string $uri, string $body, string $idempotencyKey): array
     {
         try {
@@ -72,6 +80,7 @@ class PaynowClient
         }
     }
 
+    /** @return array<string, mixed> */
     private function get(string $uri, string $idempotencyKey): array
     {
         try {
@@ -87,6 +96,7 @@ class PaynowClient
         }
     }
 
+    /** @return array<string, string> */
     private function headers(string $body, string $idempotencyKey): array
     {
         return [

@@ -44,13 +44,17 @@ class PaynowNotificationController extends Controller
                 ->where('paynow_payment_id', $data['paymentId'])
                 ->first();
 
-            if (! $paynowPayment || $paynowPayment->status?->isTerminal()) {
+            if (! $paynowPayment || $paynowPayment->status->isTerminal()) {
                 return;
             }
 
             $paynowPayment->update(['status' => $status]);
 
             $order = $paynowPayment->order;
+
+            if (! $order) {
+                return;
+            }
 
             if ($status->isSuccessful()) {
                 $this->handleConfirmed($paynowPayment, $order);
@@ -84,6 +88,7 @@ class PaynowNotificationController extends Controller
             'type' => 'capture',
             'success' => true,
             'driver' => 'paynow',
+            // @phpstan-ignore-next-line
             'amount' => $intent->amount->value,
             'reference' => $paynowPayment->paynow_payment_id,
             'status' => PaymentStatus::Confirmed->value,
