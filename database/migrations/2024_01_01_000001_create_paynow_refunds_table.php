@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('paynow_refunds', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('paynow_payment_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('paynow_payment_id')->constrained('paynow_payments')->cascadeOnDelete();
             $table->foreignId('lunar_transaction_id')->nullable()->constrained('transactions')->nullOnDelete();
             $table->string('refund_id', 20)->unique();
             $table->string('status', 20);

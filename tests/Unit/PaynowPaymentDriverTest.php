@@ -13,6 +13,7 @@ use Bpotmalnik\LunarPaynow\Enums\ApiErrorType;
 use Bpotmalnik\LunarPaynow\Enums\PaymentStatus;
 use Bpotmalnik\LunarPaynow\Exceptions\PaynowApiException;
 use Bpotmalnik\LunarPaynow\Models\PaynowPayment;
+use Bpotmalnik\LunarPaynow\Models\PaynowRefund;
 use Bpotmalnik\LunarPaynow\PaynowPaymentDriver;
 use Bpotmalnik\LunarPaynow\Responses\PaymentAuthorize;
 use Bpotmalnik\LunarPaynow\Tests\TestCase;
@@ -95,7 +96,7 @@ it('creates an intent transaction and payment record', function () {
         'reference' => 'PBLA-111-222-333',
     ]);
 
-    $this->assertDatabaseHas('paynow_payments', [
+    $this->assertDatabaseHas(PaynowPayment::class, [
         'order_id'          => $order->id,
         'paynow_payment_id' => 'PBLA-111-222-333',
         'status'            => PaymentStatus::New->value,
@@ -163,7 +164,7 @@ it('does not create a payment record on API failure', function () {
 
     app(PaynowPaymentDriver::class)->order($order)->authorize();
 
-    $this->assertDatabaseCount('paynow_payments', 0);
+    $this->assertDatabaseCount(PaynowPayment::class, 0);
 });
 
 it('passes the continue_url to PayNow', function () {
@@ -429,7 +430,7 @@ it('recovery links the new payment to the original via parent_payment_id', funct
         ->recoverFrom($failedPayment)
         ->authorize();
 
-    $this->assertDatabaseHas('paynow_payments', [
+    $this->assertDatabaseHas(PaynowPayment::class, [
         'paynow_payment_id' => 'PBLA-RECOVERY-002',
         'parent_payment_id' => $failedPayment->id,
         'external_id'       => $failedPayment->external_id,
@@ -641,7 +642,7 @@ it('creates a PaynowRefund record and Lunar transaction on success', function ()
 
     expect($result->success)->toBeTrue();
 
-    $this->assertDatabaseHas('paynow_refunds', [
+    $this->assertDatabaseHas(PaynowRefund::class, [
         'refund_id' => 'REFX-NEW-001',
         'status'    => 'PENDING',
         'amount'    => 3000,
@@ -801,7 +802,7 @@ it('cancels a NEW refund and updates both statuses', function () {
 
     expect($result->success)->toBeTrue();
 
-    $this->assertDatabaseHas('paynow_refunds', [
+    $this->assertDatabaseHas(PaynowRefund::class, [
         'id'     => $refund->id,
         'status' => 'CANCELLED',
     ]);
@@ -899,7 +900,7 @@ it('cancel fails when the API rejects the cancellation', function () {
     expect($result->success)->toBeFalse();
 
     // Status must not have been updated on API failure
-    $this->assertDatabaseHas('paynow_refunds', [
+    $this->assertDatabaseHas(PaynowRefund::class, [
         'id'     => $refund->id,
         'status' => 'NEW',
     ]);

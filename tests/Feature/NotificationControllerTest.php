@@ -179,7 +179,7 @@ it('creates a capture transaction, sets order status, and fires PaymentConfirmed
         $body
     )->assertOk();
 
-    assertDatabaseHas('paynow_payments', [
+    assertDatabaseHas(PaynowPayment::class, [
         'id'     => $p->id,
         'status' => PaymentStatus::Confirmed->value,
     ]);
@@ -225,7 +225,7 @@ it('sets the order status and fires PaymentFailed for each terminal failure stat
         $body
     )->assertOk();
 
-    assertDatabaseHas('paynow_payments', [
+    assertDatabaseHas(PaynowPayment::class, [
         'id'     => $p->id,
         'status' => $status,
     ]);
