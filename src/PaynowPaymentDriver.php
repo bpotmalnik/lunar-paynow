@@ -2,6 +2,7 @@
 
 namespace Bpotmalnik\LunarPaynow;
 
+use Bpotmalnik\LunarPaynow\Contracts\PaynowClientContract;
 use Bpotmalnik\LunarPaynow\Enums\ApiErrorType;
 use Bpotmalnik\LunarPaynow\Enums\PaymentStatus;
 use Bpotmalnik\LunarPaynow\Enums\RefundReason;
@@ -15,14 +16,17 @@ use Illuminate\Support\Str;
 use Lunar\Base\DataTransferObjects\PaymentCapture;
 use Lunar\Base\DataTransferObjects\PaymentRefund;
 use Lunar\Events\PaymentAttemptEvent;
+use Lunar\Models\Cart;
 use Lunar\Models\Contracts\Transaction as TransactionContract;
+use Lunar\Models\Order;
+use Lunar\Models\Transaction;
 use Lunar\PaymentTypes\AbstractPayment;
 
 class PaynowPaymentDriver extends AbstractPayment
 {
     protected ?PaynowPayment $recoveryPayment = null;
 
-    public function __construct(private readonly PaynowClient $client) {}
+    public function __construct(private readonly PaynowClientContract $client) {}
 
     public function recoverFrom(PaynowPayment $failedPayment): static
     {
@@ -51,7 +55,7 @@ class PaynowPaymentDriver extends AbstractPayment
             return $response;
         }
 
-        /** @var \Lunar\Models\Order $order */
+        /** @var Order $order */
         $order = $this->order;
 
         if ($order->placed_at) {
@@ -97,7 +101,7 @@ class PaynowPaymentDriver extends AbstractPayment
 
     public function refund(TransactionContract $transaction, int $amount = 0, $notes = null): PaymentRefund
     {
-        /** @var \Lunar\Models\Transaction $transaction */
+        /** @var Transaction $transaction */
         $paynowPayment = PaynowPayment::where('paynow_payment_id', $transaction->reference)->first();
 
         if (! $paynowPayment) {
@@ -215,9 +219,9 @@ class PaynowPaymentDriver extends AbstractPayment
 
     private function callPaynow(string $externalId, ?int $parentPaymentId): PaymentAuthorize
     {
-        /** @var \Lunar\Models\Order $order */
+        /** @var Order $order */
         $order = $this->order;
-        /** @var \Lunar\Models\Cart|null $cart */
+        /** @var Cart|null $cart */
         $cart = $this->cart;
 
         // @phpstan-ignore-next-line (billingAddress nullability and CartContract::$user not in interface)
@@ -258,7 +262,7 @@ class PaynowPaymentDriver extends AbstractPayment
 
             $apiResponse = $this->client->createPayment($payload);
 
-            /** @var \Lunar\Models\Transaction $transaction */
+            /** @var Transaction $transaction */
             $transaction = $order->transactions()->create([
                 'type' => 'intent',
                 'success' => false,

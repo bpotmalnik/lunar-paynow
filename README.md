@@ -21,7 +21,10 @@ PayNow v3 payment driver for [LunarPHP](https://lunarphp.io). Handles the full p
 - [Events](#events)
 - [Error messages](#error-messages)
 - [Translation](#translation)
-- [Testing](#testing)
+- [Testing in your application](#testing-in-your-application)
+  - [FakePaynowClient](#fakepaynovclient)
+  - [Simulating a webhook confirmation](#simulating-a-webhook-confirmation)
+- [Package development](#package-development)
 - [License](#license)
 
 ## Requirements
@@ -307,7 +310,70 @@ To customise any string, publish the translations and edit the files under `lang
 php artisan vendor:publish --tag=lunar-paynow-lang
 ```
 
-## Testing
+## Testing in your application
+
+The package ships with a `FakePaynowClient` that lets you write feature tests for the full checkout flow without making real HTTP calls to PayNow or needing valid API credentials.
+
+### FakePaynowClient
+
+`Bpotmalnik\LunarPaynow\Testing\FakePaynowClient` implements `PaynowClientContract` and can be swapped into the container before each test:
+
+```php
+use Bpotmalnik\LunarPaynow\Contracts\PaynowClientContract;
+use Bpotmalnik\LunarPaynow\Testing\FakePaynowClient;
+
+beforeEach(function () {
+    $fake = new FakePaynowClient;
+    $this->app->instance(PaynowClientContract::class, $fake);
+    $this->paynow = $fake;
+});
+```
+
+The fake behaves as follows:
+
+| Method | Behaviour |
+|---|---|
+| `createPayment()` | Returns `['paymentId' => $this->paymentId, 'status' => 'NEW', 'redirectUrl' => $this->redirectUrl]` |
+| `verifyNotificationSignature()` | Always returns `true` — any signature header is accepted |
+| `getPaymentStatus()` | Returns `['paymentId' => $this->paymentId, 'status' => 'CONFIRMED']` |
+| `createRefund()` | Returns a minimal successful refund payload |
+| `cancelRefund()` / `getRefundStatus()` | No-ops / return stubs |
+
+Two public properties let you reference the deterministic values in assertions:
+
+```php
+$fake->paymentId;    // 'fake-paynow-id-00001'
+$fake->redirectUrl;  // 'https://paynow.pl/fake-redirect'
+```
+
+You can override them before the test to simulate different scenarios:
+
+```php
+$fake = new FakePaynowClient;
+$fake->paymentId = 'custom-id-for-this-test';
+```
+
+### Simulating a webhook confirmation
+
+Because `verifyNotificationSignature()` always returns `true`, you can POST a fake webhook notification directly in your test without a valid HMAC signature:
+
+```php
+$body = json_encode(['paymentId' => $this->paynow->paymentId, 'status' => 'CONFIRMED']);
+
+$this->call(
+    'POST',
+    route('paynow.notification'),
+    [],
+    [],
+    [],
+    ['HTTP_SIGNATURE' => 'fake-sig', 'CONTENT_TYPE' => 'application/json'],
+    $body,
+);
+```
+
+This triggers the full notification handling path: the `PaynowPayment` record is updated, a `capture` transaction is created, `placed_at` is set on the order, the order status transitions to `payment-received`, and the `PaymentConfirmed` event is fired — exactly as in production.
+
+## Package development
 
 ```bash
 composer test

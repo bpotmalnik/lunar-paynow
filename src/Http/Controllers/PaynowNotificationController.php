@@ -2,11 +2,11 @@
 
 namespace Bpotmalnik\LunarPaynow\Http\Controllers;
 
+use Bpotmalnik\LunarPaynow\Contracts\PaynowClientContract;
 use Bpotmalnik\LunarPaynow\Enums\PaymentStatus;
 use Bpotmalnik\LunarPaynow\Events\PaymentConfirmed;
 use Bpotmalnik\LunarPaynow\Events\PaymentFailed;
 use Bpotmalnik\LunarPaynow\Models\PaynowPayment;
-use Bpotmalnik\LunarPaynow\PaynowClient;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
@@ -16,7 +16,7 @@ use Lunar\Models\Order;
 
 class PaynowNotificationController extends Controller
 {
-    public function __invoke(Request $request, PaynowClient $client): Response
+    public function __invoke(Request $request, PaynowClientContract $client): Response
     {
         $rawBody = $request->getContent();
         $signature = $request->header('Signature', '');

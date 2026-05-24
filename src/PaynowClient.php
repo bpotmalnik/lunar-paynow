@@ -2,12 +2,13 @@
 
 namespace Bpotmalnik\LunarPaynow;
 
+use Bpotmalnik\LunarPaynow\Contracts\PaynowClientContract;
 use Bpotmalnik\LunarPaynow\Enums\RefundReason;
 use Bpotmalnik\LunarPaynow\Exceptions\PaynowApiException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 
-class PaynowClient
+class PaynowClient implements PaynowClientContract
 {
     private const SANDBOX_URL = 'https://api.sandbox.paynow.pl';
 
@@ -20,7 +21,7 @@ class PaynowClient
     ) {}
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
     public function createPayment(array $payload): array

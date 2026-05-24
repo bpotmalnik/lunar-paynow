@@ -2,6 +2,7 @@
 
 namespace Bpotmalnik\LunarPaynow;
 
+use Bpotmalnik\LunarPaynow\Contracts\PaynowClientContract;
 use Bpotmalnik\LunarPaynow\Http\Controllers\PaynowNotificationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -22,6 +23,10 @@ class PaynowServiceProvider extends ServiceProvider
                 signatureKey: config('lunar.paynow.signature_key', ''),
                 sandbox: (bool) config('lunar.paynow.sandbox', false),
             );
+        });
+
+        $this->app->singleton(PaynowClientContract::class, function ($app) {
+            return $app->make(PaynowClient::class);
         });
     }
 
