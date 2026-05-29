@@ -6,7 +6,7 @@
     <a href="https://packagist.org/packages/bpotmalnik/lunar-paynow"><img src="https://img.shields.io/packagist/l/bpotmalnik/lunar-paynow" alt="License"></a>
 </p>
 
-PayNow v3 payment driver for [LunarPHP](https://lunarphp.io). Handles the full payment lifecycle — authorization, notifications, refunds, partial refunds, refund cancellation, and payment recovery — following Lunar's payment driver conventions.
+[PayNow](https://paynow.pl/) ([docs](https://docs.paynow.pl/docs/reference/v3/api-reference)) v3 payment driver for [LunarPHP](https://lunarphp.io). Handles the full payment lifecycle — authorization, notifications, refunds, partial refunds, refund cancellation, and payment recovery — following Lunar's payment driver conventions.
 
 - [Requirements](#requirements)
 - [Installation](#installation)
