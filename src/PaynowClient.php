@@ -26,7 +26,7 @@ class PaynowClient implements PaynowClientContract
      */
     public function createPayment(array $payload): array
     {
-        $body = json_encode($payload, JSON_THROW_ON_ERROR);
+        $body = json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
 
         return $this->post('/v3/payments', $body, $this->idempotencyKey($payload['externalId']));
     }
@@ -41,7 +41,7 @@ class PaynowClient implements PaynowClientContract
     public function createRefund(string $paymentId, int $amount, ?RefundReason $reason = null): array
     {
         $payload = array_filter(['amount' => $amount, 'reason' => $reason?->value]);
-        $body = json_encode($payload, JSON_THROW_ON_ERROR);
+        $body = json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
 
         return $this->post("/v3/payments/{$paymentId}/refunds", $body, $this->idempotencyKey("refund-{$paymentId}-{$amount}"));
     }
@@ -102,15 +102,29 @@ class PaynowClient implements PaynowClientContract
     {
         return [
             'Api-Key' => $this->apiKey,
-            'Signature' => $this->sign($body),
+            'Signature' => $this->signApiRequest($body, $idempotencyKey),
             'Idempotency-Key' => $idempotencyKey,
             'Accept' => 'application/json',
         ];
     }
 
-    private function sign(string $body): string
+    private function signApiRequest(string $body, string $idempotencyKey): string
     {
-        return base64_encode(hash_hmac('sha256', $body, $this->signatureKey, true));
+        $payload = json_encode([
+            'headers' => [
+                'Api-Key' => $this->apiKey,
+                'Idempotency-Key' => $idempotencyKey,
+            ],
+            'parameters' => (object) [],
+            'body' => $body,
+        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+
+        return $this->sign($payload);
+    }
+
+    private function sign(string $payload): string
+    {
+        return base64_encode(hash_hmac('sha256', $payload, $this->signatureKey, true));
     }
 
     private function idempotencyKey(string $seed): string

@@ -36,6 +36,19 @@ it('sends a signed POST and returns the payment response', function () {
     );
 });
 
+it('calculates the v3 API signature from headers parameters and body', function () {
+    $client = new PaynowClient(
+        '97a55694-5478-43b5-b406-fb49ebfdd2b5',
+        'b305b996-bca5-4404-a0b7-2ccea3d2b64b',
+        true
+    );
+
+    $method = new ReflectionMethod($client, 'signApiRequest');
+
+    expect($method->invoke($client, '', 'd243fdb3-c287-484a-bb9c-58536f2794c1'))
+        ->toBe('fXwLZRwo0WiGll90PPl5oULX9VKA0gpFA/3+E+NRp5E=');
+});
+
 it('throws on a 400 payment creation response', function () {
     Http::fake([
         'api.sandbox.paynow.pl/v3/payments' => Http::response(
