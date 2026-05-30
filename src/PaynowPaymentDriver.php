@@ -332,7 +332,9 @@ class PaynowPaymentDriver extends AbstractPayment
         }
 
         return $this->cart->lines->map(fn ($line) => [
-            'name' => $line->purchasable->translateAttribute('name'),
+            'name' => $line->purchasable->translateAttribute('name')
+                ?: $line->purchasable->product->translateAttribute('name'),
+            'category' => $line->purchasable->product->productType->name,
             'quantity' => $line->quantity,
             'price' => $line->unitPrice->value,
         ])->values()->all();
