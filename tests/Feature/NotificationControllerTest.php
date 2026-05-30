@@ -38,7 +38,7 @@ it('returns 401 when body is tampered after signing', function () {
 });
 
 it('returns 200 and does nothing when paymentId is missing', function () {
-    Event::fake();
+    Event::fake([PaymentConfirmed::class, PaymentFailed::class]);
 
     $body = json_encode(['status' => 'CONFIRMED']);
     $sig = notificationSignature($body);
@@ -52,7 +52,7 @@ it('returns 200 and does nothing when paymentId is missing', function () {
 });
 
 it('returns 200 and does nothing when status is missing', function () {
-    Event::fake();
+    Event::fake([PaymentConfirmed::class, PaymentFailed::class]);
 
     $body = json_encode(['paymentId' => 'PBLA-111-222-333']);
     $sig = notificationSignature($body);
@@ -66,7 +66,7 @@ it('returns 200 and does nothing when status is missing', function () {
 });
 
 it('returns 200 and ignores NEW status', function () {
-    Event::fake();
+    Event::fake([PaymentConfirmed::class, PaymentFailed::class]);
     ['paynowPayment' => $p] = makePaynowPaymentWithOrder();
 
     $body = notificationBody($p->paynow_payment_id, 'NEW');
@@ -81,7 +81,7 @@ it('returns 200 and ignores NEW status', function () {
 });
 
 it('returns 200 and ignores PENDING status', function () {
-    Event::fake();
+    Event::fake([PaymentConfirmed::class, PaymentFailed::class]);
     ['paynowPayment' => $p] = makePaynowPaymentWithOrder();
 
     $body = notificationBody($p->paynow_payment_id, 'PENDING');
@@ -96,7 +96,7 @@ it('returns 200 and ignores PENDING status', function () {
 });
 
 it('returns 200 and does nothing for an unknown paymentId', function () {
-    Event::fake();
+    Event::fake([PaymentConfirmed::class, PaymentFailed::class]);
 
     $body = notificationBody('PBLA-UNKNOWN-000', 'CONFIRMED');
     $sig = notificationSignature($body);
@@ -110,7 +110,7 @@ it('returns 200 and does nothing for an unknown paymentId', function () {
 });
 
 it('is idempotent for a payment already in CONFIRMED status', function () {
-    Event::fake();
+    Event::fake([PaymentConfirmed::class, PaymentFailed::class]);
     ['paynowPayment' => $p] = makePaynowPaymentWithOrder('PBLA-CONFIRM-DONE', 'CONFIRMED');
 
     $body = notificationBody($p->paynow_payment_id, 'CONFIRMED');
@@ -126,7 +126,7 @@ it('is idempotent for a payment already in CONFIRMED status', function () {
 });
 
 it('is idempotent for a payment already in REJECTED status', function () {
-    Event::fake();
+    Event::fake([PaymentConfirmed::class, PaymentFailed::class]);
     ['paynowPayment' => $p] = makePaynowPaymentWithOrder('PBLA-REJECT-DONE', 'REJECTED');
 
     $body = notificationBody($p->paynow_payment_id, 'CONFIRMED');
@@ -141,7 +141,7 @@ it('is idempotent for a payment already in REJECTED status', function () {
 });
 
 it('creates a capture transaction, sets order status, and fires PaymentConfirmed on CONFIRMED', function () {
-    Event::fake();
+    Event::fake([PaymentConfirmed::class, PaymentFailed::class]);
     ['order' => $order, 'transaction' => $intentTx, 'paynowPayment' => $p] = makePaynowPaymentWithOrder();
 
     $body = notificationBody($p->paynow_payment_id, 'CONFIRMED');
@@ -157,14 +157,14 @@ it('creates a capture transaction, sets order status, and fires PaymentConfirmed
         'status' => PaymentStatus::Confirmed->value,
     ]);
 
-    assertDatabaseHas('transactions', [
+    assertDatabaseHas('lunar_transactions', [
         'parent_transaction_id' => $intentTx->id,
         'type' => 'capture',
         'success' => true,
         'driver' => 'paynow',
     ]);
 
-    assertDatabaseHas('transactions', [
+    assertDatabaseHas('lunar_transactions', [
         'id' => $intentTx->id,
         'success' => true,
         'status' => PaymentStatus::Confirmed->value,
@@ -183,7 +183,7 @@ dataset('failed_statuses', [
 ]);
 
 it('sets the order status and fires PaymentFailed for each terminal failure status', function (string $status) {
-    Event::fake();
+    Event::fake([PaymentConfirmed::class, PaymentFailed::class]);
     ['order' => $order, 'paynowPayment' => $p] = makePaynowPaymentWithOrder("PBLA-FAIL-{$status}", 'PENDING');
 
     $body = notificationBody($p->paynow_payment_id, $status);
@@ -205,7 +205,7 @@ it('sets the order status and fires PaymentFailed for each terminal failure stat
 })->with('failed_statuses');
 
 it('marks the intent transaction as failed on REJECTED', function () {
-    Event::fake();
+    Event::fake([PaymentConfirmed::class, PaymentFailed::class]);
     ['transaction' => $intentTx, 'paynowPayment' => $p] = makePaynowPaymentWithOrder();
 
     $body = notificationBody($p->paynow_payment_id, 'REJECTED');
@@ -216,7 +216,7 @@ it('marks the intent transaction as failed on REJECTED', function () {
         $body
     )->assertOk();
 
-    assertDatabaseHas('transactions', [
+    assertDatabaseHas('lunar_transactions', [
         'id' => $intentTx->id,
         'success' => false,
         'status' => 'REJECTED',

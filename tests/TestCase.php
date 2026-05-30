@@ -3,6 +3,7 @@
 namespace Bpotmalnik\LunarPaynow\Tests;
 
 use Bpotmalnik\LunarPaynow\PaynowServiceProvider;
+use Cartalyst\Converter\Laravel\ConverterServiceProvider;
 use Illuminate\Support\Facades\Http;
 use Kalnoy\Nestedset\NestedSetServiceProvider;
 use Lunar\LunarServiceProvider;
@@ -23,6 +24,7 @@ class TestCase extends OrchestraTestCase
     protected function getPackageProviders($app): array
     {
         return [
+            ConverterServiceProvider::class,
             LunarServiceProvider::class,
             MediaLibraryServiceProvider::class,
             ActivitylogServiceProvider::class,
